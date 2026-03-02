@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apex Long Drive</title>
+    <title>Apex Long Drive: Pro Edition</title>
     <style>
         :root {
             --primary: #00ffcc;
-            --bg-glass: rgba(15, 23, 42, 0.8);
+            --bg-glass: rgba(15, 23, 42, 0.9);
         }
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
-            overflow: hidden; background-color: #0f172a;
-            font-family: 'Inter', system-ui, sans-serif;
+            overflow: hidden; background-color: #020617;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             user-select: none;
         }
         canvas { display: block; }
@@ -24,36 +24,39 @@
         .glass-panel {
             background: var(--bg-glass);
             backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px; padding: 1.5rem; color: white;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            text-align: center; max-width: 350px; margin: 0 auto;
+            border-radius: 24px; padding: 1.5rem; color: white;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            text-align: center; max-width: 380px; margin: 0 auto;
             pointer-events: auto;
         }
-        h1 { margin: 0; font-size: 20px; letter-spacing: 3px; color: var(--primary); text-transform: uppercase; }
+        .club-selector {
+            display: flex; gap: 8px; justify-content: center; margin-bottom: 15px;
+        }
+        .club-btn {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);
+            color: #94a3b8; padding: 8px 12px; border-radius: 10px; cursor: pointer;
+            font-size: 11px; font-weight: 700; transition: all 0.2s;
+        }
+        .club-btn.active {
+            background: var(--primary); color: #020617; border-color: var(--primary);
+        }
+        h1 { margin: 0; font-size: 18px; letter-spacing: 4px; color: var(--primary); text-transform: uppercase; }
+        .meter-label { display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8; text-transform: uppercase; margin-top: 10px;}
         .meter-container {
-            width: 100%; height: 12px; background: rgba(255,255,255,0.1);
-            border-radius: 6px; margin: 12px 0; position: relative; overflow: hidden;
+            width: 100%; height: 8px; background: rgba(255,255,255,0.1);
+            border-radius: 4px; margin: 6px 0 12px 0; position: relative; overflow: hidden;
         }
-        .meter-fill {
-            height: 100%; width: 0%;
-            background: linear-gradient(90deg, #3b82f6, var(--primary));
-        }
-        .meter-target {
-            position: absolute; top: 0; height: 100%; width: 4px;
-            background: #fff; left: 50%; transform: translateX(-50%);
-            box-shadow: 0 0 10px #fff;
-        }
-        .stats { font-size: 3.5rem; font-weight: 800; margin: 0.5rem 0; color: #fff; }
-        .sub-text { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
-        button {
+        .meter-fill { height: 100%; width: 0%; background: var(--primary); box-shadow: 0 0 10px var(--primary); }
+        .stats { font-size: 4rem; font-weight: 900; margin: 0.2rem 0; color: #fff; letter-spacing: -2px; }
+        .sub-text { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 2px; }
+        button.action-btn {
             background: #fff; color: #0f172a; border: none;
-            padding: 12px 24px; font-size: 14px; font-weight: 700;
-            border-radius: 12px; cursor: pointer; text-transform: uppercase;
-            transition: all 0.2s; width: 100%;
+            padding: 14px; font-size: 14px; font-weight: 800;
+            border-radius: 14px; cursor: pointer; text-transform: uppercase;
+            transition: all 0.2s; width: 100%; margin-top: 10px;
         }
-        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,255,204,0.3); }
+        button.action-btn:hover { background: var(--primary); transform: translateY(-2px); }
     </style>
 </head>
 <body>
@@ -62,21 +65,31 @@
 
     <div id="ui-layer">
         <div class="glass-panel">
-            <h1>Will's Longdrive Game</h1>
-            <div id="instruction" class="sub-text" style="margin-top:10px;">Click to set Power</div>
+            <h1>Apex Drive</h1>
             
+            <div class="meter-label"><span>Club Selection</span></div>
+            <div class="club-selector">
+                <div class="club-btn active" onclick="setClub('driver')" id="btn-driver">DRIVER</div>
+                <div class="club-btn" onclick="setClub('wood')" id="btn-wood">3-WOOD</div>
+                <div class="club-btn" onclick="setClub('iron')" id="btn-iron">7-IRON</div>
+            </div>
+
+            <div id="instruction" class="sub-text">Click to start swing</div>
+            
+            <div class="meter-label"><span>Power</span><span id="p-val">0%</span></div>
             <div class="meter-container"><div class="meter-fill" id="powerMeter"></div></div>
-            <div class="sub-text">Accuracy</div>
+            
+            <div class="meter-label"><span>Accuracy</span></div>
             <div class="meter-container">
-                <div class="meter-fill" id="accuracyMeter" style="width: 50%;"></div>
-                <div class="meter-target"></div>
+                <div class="meter-fill" id="accuracyMeter" style="width: 50%; background: #3b82f6;"></div>
+                <div style="position:absolute; left:50%; top:0; bottom:0; width:2px; background:white;"></div>
             </div>
         </div>
 
-        <div class="glass-panel" id="result-panel" style="opacity: 0; transform: translateY(20px); transition: all 0.5s ease;">
-            <div class="sub-text">Total Distance</div>
+        <div class="glass-panel" id="result-panel" style="opacity: 0; transform: translateY(30px); transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);">
+            <div class="sub-text">Total Carry + Roll</div>
             <p class="stats" id="distanceText">0 YDS</p>
-            <button onclick="resetGame()">New Ball</button>
+            <button class="action-btn" onclick="resetGame()">Tee Up Again</button>
         </div>
     </div>
 
@@ -84,27 +97,35 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     
-    // UI
+    // UI References
     const powerMeter = document.getElementById('powerMeter');
     const accuracyMeter = document.getElementById('accuracyMeter');
     const instruction = document.getElementById('instruction');
     const resultPanel = document.getElementById('result-panel');
     const distanceText = document.getElementById('distanceText');
 
+    // Game State
     let width, height, groundLevel;
-    let state = 'power'; 
+    let state = 'idle'; 
     let power = 0;
     let accuracy = 50; 
     let meterDir = 1;
     let camera = { x: 0, y: 0 };
-    let ball = { x: 100, y: 0, vx: 0, vy: 0, radius: 4, active: false };
     let trail = [];
     let particles = [];
-    
-    // Constants
-    const gravity = 0.18;
-    const friction = 0.985;
-    const bounce = 0.55;
+
+    // Club Profiles
+    const clubs = {
+        driver: { launchAngle: 0.2, spin: 0.03, powerMult: 1.2, bounce: 0.6, friction: 0.98 },
+        wood:   { launchAngle: 0.4, spin: 0.05, powerMult: 1.0, bounce: 0.4, friction: 0.96 },
+        iron:   { launchAngle: 0.8, spin: 0.12, powerMult: 0.7, bounce: 0.2, friction: 0.92 }
+    };
+    let currentClub = clubs.driver;
+
+    // Physics constants
+    let ball = { x: 150, y: 0, vx: 0, vy: 0, active: false, inAir: true };
+    const gravity = 0.22;
+    const airResistance = 0.992;
 
     function resize() {
         width = window.innerWidth;
@@ -116,94 +137,109 @@
     window.addEventListener('resize', resize);
     resize();
 
-    function spawnParticles(x, y, color, count) {
+    function setClub(type) {
+        if (state !== 'idle' && state !== 'landed') return;
+        document.querySelectorAll('.club-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('btn-' + type).classList.add('active');
+        currentClub = clubs[type];
+        resetGame();
+    }
+
+    function spawnParticles(x, y, color, count, speed = 5) {
         for(let i=0; i<count; i++) {
             particles.push({
                 x, y,
-                vx: (Math.random() - 0.5) * 8,
-                vy: (Math.random() - 0.8) * 8,
-                life: 1,
-                color
+                vx: (Math.random() - 0.5) * speed,
+                vy: (Math.random() - 0.7) * speed,
+                life: 1, color
             });
         }
     }
 
     function launch() {
         ball.active = true;
-        let pFactor = power / 100;
-        let aFactor = 1 - (Math.abs(accuracy - 50) / 50); // 1 is perfect
+        ball.inAir = true;
+        let pFactor = (power / 100) * currentClub.powerMult;
+        let angle = currentClub.launchAngle;
         
-        ball.vx = (12 + (pFactor * 25)) * (0.7 + aFactor * 0.3);
-        ball.vy = -10 - (pFactor * 18);
-        spawnParticles(ball.x, ball.y, '#fff', 20);
+        // Initial Velocity based on angle and power
+        let speed = 25 + (pFactor * 25);
+        ball.vx = Math.cos(angle) * speed;
+        ball.vy = -Math.sin(angle) * speed;
+        
+        spawnParticles(ball.x, ball.y, '#fff', 25, 10);
     }
 
     function resetGame() {
-        state = 'power';
+        state = 'idle';
         power = 0; accuracy = 50; meterDir = 1;
-        ball = { x: 150, y: groundLevel, vx: 0, vy: 0, radius: 4, active: false };
+        ball = { x: 150, y: groundLevel, vx: 0, vy: 0, active: false, inAir: true };
         camera = { x: 0, y: 0 };
         trail = [];
         resultPanel.style.opacity = '0';
-        resultPanel.style.transform = 'translateY(20px)';
+        resultPanel.style.transform = 'translateY(30px)';
         instruction.innerText = "Click to set Power";
-    }
-
-    function drawMountainRange(speed, color, baseH, varH) {
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.moveTo(0, height); // Fill below
-        
-        let step = 100;
-        let offset = (camera.x * speed) % (step * 2);
-        
-        for (let x = -step * 2; x < width + step * 2; x += step) {
-            let worldX = x + (camera.x * speed);
-            let h = baseH + Math.sin(worldX * 0.005) * varH;
-            ctx.lineTo(x - offset, (groundLevel - camera.y) - h);
-        }
-        
-        ctx.lineTo(width, height);
-        ctx.lineTo(0, height);
-        ctx.fill();
     }
 
     function update() {
         if (state === 'power') {
-            power += 2 * meterDir;
+            power += 2.5 * meterDir;
             if (power >= 100 || power <= 0) meterDir *= -1;
             powerMeter.style.width = power + '%';
+            document.getElementById('p-val').innerText = Math.floor(power) + "%";
         } else if (state === 'accuracy') {
-            accuracy += 4 * meterDir;
+            accuracy += 4.5 * meterDir;
             if (accuracy >= 100 || accuracy <= 0) meterDir *= -1;
             accuracyMeter.style.width = accuracy + '%';
         } else if (ball.active) {
-            ball.vy += gravity;
-            ball.vx *= friction;
+            // Apply Physics
+            if (ball.inAir) {
+                // Magnus Effect (Lift from spin)
+                ball.vy -= ball.vx * currentClub.spin; 
+                ball.vy += gravity;
+                ball.vx *= airResistance;
+            } else {
+                // Rolling physics
+                ball.vx *= currentClub.friction;
+            }
+
             ball.x += ball.vx;
             ball.y += ball.vy;
 
+            // Ground Collision
             if (ball.y >= groundLevel) {
                 ball.y = groundLevel;
-                ball.vy = -ball.vy * bounce;
-                ball.vx *= 0.8;
-                if (Math.abs(ball.vx) > 1) spawnParticles(ball.x, ball.y, '#4ade80', 2);
-                if (Math.abs(ball.vx) < 0.3) {
+                
+                if (Math.abs(ball.vy) > 1) {
+                    // Bounce
+                    ball.vy = -ball.vy * currentClub.bounce;
+                    ball.vx *= 0.9; // Impact drag
+                    spawnParticles(ball.x, ball.y, '#4ade80', 5, 3);
+                } else {
+                    // Rolling
+                    ball.vy = 0;
+                    ball.inAir = false;
+                }
+
+                // Stop condition
+                if (Math.abs(ball.vx) < 0.15) {
+                    ball.vx = 0;
                     ball.active = false;
-                    distanceText.innerText = Math.floor((ball.x - 150)/10) + " YDS";
+                    state = 'landed';
+                    distanceText.innerText = Math.floor((ball.x - 150)/8) + " YDS";
                     resultPanel.style.opacity = '1';
                     resultPanel.style.transform = 'translateY(0)';
                 }
             }
-            trail.push({x: ball.x, y: ball.y});
-            if (trail.length > 50) trail.shift();
+            if (ball.vx > 1) trail.push({x: ball.x, y: ball.y});
+            if (trail.length > 60) trail.shift();
         }
 
-        // Camera
-        let tx = ball.x - width/4;
-        let ty = Math.min(0, ball.y - height/2);
-        camera.x += (tx - camera.x) * 0.1;
-        camera.y += (ty - camera.y) * 0.05;
+        // Smooth Camera follow
+        let targetX = ball.x - width/4;
+        let targetY = Math.min(0, ball.y - height/1.8);
+        camera.x += (targetX - camera.x) * 0.1;
+        camera.y += (targetY - camera.y) * 0.05;
 
         particles.forEach((p, i) => {
             p.x += p.vx; p.y += p.vy; p.vy += 0.2; p.life -= 0.02;
@@ -212,44 +248,53 @@
     }
 
     function draw() {
-        // Sky
-        let grad = ctx.createLinearGradient(0, 0, 0, height);
-        grad.addColorStop(0, '#020617');
-        grad.addColorStop(1, '#1e1b4b');
-        ctx.fillStyle = grad;
+        ctx.clearRect(0, 0, width, height);
+        
+        // Deep Sky
+        let skyGrad = ctx.createLinearGradient(0, 0, 0, height);
+        skyGrad.addColorStop(0, '#020617');
+        skyGrad.addColorStop(1, '#1e293b');
+        ctx.fillStyle = skyGrad;
         ctx.fillRect(0, 0, width, height);
 
-        // Mountains
-        drawMountainRange(0.1, '#1e293b', 200, 80);
-        drawMountainRange(0.3, '#0f172a', 100, 40);
+        // Distant Mountains (Parallax)
+        drawMountains(0.15, '#1e293b', 180, 60);
+        drawMountains(0.4, '#0f172a', 100, 30);
 
-        // Ground
         ctx.save();
         ctx.translate(-camera.x, -camera.y);
+
+        // Ground
         ctx.fillStyle = '#064e3b';
-        ctx.fillRect(camera.x, groundLevel, width, 500);
-        
-        // Mowed lines
-        ctx.fillStyle = 'rgba(255,255,255,0.03)';
-        for(let i=0; i<ball.x + width; i+=200) {
-            ctx.fillRect(i, groundLevel, 100, 500);
+        ctx.fillRect(camera.x - 100, groundLevel, width + 200, height);
+
+        // Better Grass Texturing
+        ctx.fillStyle = 'rgba(255,255,255,0.02)';
+        for(let i=0; i < ball.x + width; i+=250) {
+            ctx.fillRect(i, groundLevel, 125, height);
         }
 
-        // Trail
+        // Trail Line
         if (trail.length > 1) {
-            ctx.strokeStyle = 'rgba(0, 255, 204, 0.3)';
-            ctx.lineWidth = 3;
+            ctx.strokeStyle = 'rgba(0, 255, 204, 0.4)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
             ctx.beginPath();
             ctx.moveTo(trail[0].x, trail[0].y);
             trail.forEach(p => ctx.lineTo(p.x, p.y));
             ctx.stroke();
+            ctx.setLineDash([]);
         }
+
+        // Tee
+        ctx.fillStyle = "#94a3b8";
+        ctx.fillRect(149, groundLevel, 2, 8);
 
         // Ball
         ctx.fillStyle = '#fff';
-        ctx.shadowBlur = 15; ctx.shadowColor = '#00ffcc';
+        ctx.shadowBlur = 15; ctx.shadowColor = varColor('--primary');
         ctx.beginPath();
-        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2);
+        ctx.arc(ball.x, ball.y, 4, 0, Math.PI*2);
         ctx.fill();
         ctx.shadowBlur = 0;
 
@@ -257,12 +302,29 @@
         particles.forEach(p => {
             ctx.fillStyle = p.color;
             ctx.globalAlpha = p.life;
-            ctx.fillRect(p.x, p.y, 3, 3);
+            ctx.fillRect(p.x, p.y, 2, 2);
         });
         ctx.globalAlpha = 1;
 
         ctx.restore();
     }
+
+    function drawMountains(speed, color, base, variance) {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        let step = 120;
+        let offset = (camera.x * speed) % (step * 2);
+        ctx.moveTo(0, height);
+        for (let x = -step * 2; x < width + step * 2; x += step) {
+            let wx = x + (camera.x * speed);
+            let h = base + Math.sin(wx * 0.004) * variance + Math.cos(wx * 0.01) * 10;
+            ctx.lineTo(x - offset, (groundLevel - camera.y) - h);
+        }
+        ctx.lineTo(width, height);
+        ctx.fill();
+    }
+
+    function varColor(name) { return getComputedStyle(document.documentElement).getPropertyValue(name); }
 
     function loop() {
         update();
@@ -270,9 +332,11 @@
         requestAnimationFrame(loop);
     }
 
-    window.addEventListener('mousedown', () => {
-        if (state === 'power') { state = 'accuracy'; instruction.innerText = "Set Accuracy"; }
-        else if (state === 'accuracy') { state = 'flying'; instruction.innerText = "Watching..."; launch(); }
+    window.addEventListener('mousedown', (e) => {
+        if(e.target.closest('.glass-panel')) return;
+        if (state === 'idle' || state === 'landed') { resetGame(); state = 'power'; instruction.innerText = "Stop at 100%!"; }
+        else if (state === 'power') { state = 'accuracy'; instruction.innerText = "Hit the center!"; }
+        else if (state === 'accuracy') { state = 'flying'; instruction.innerText = "In the air!"; launch(); }
     });
 
     resetGame();
