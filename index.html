@@ -3,77 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Long Drive: Apex</title>
+    <title>Apex Long Drive</title>
     <style>
         :root {
             --primary: #00ffcc;
-            --bg-glass: rgba(25, 30, 45, 0.7);
+            --bg-glass: rgba(15, 23, 42, 0.8);
         }
         body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: #87CEEB;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; background-color: #0f172a;
+            font-family: 'Inter', system-ui, sans-serif;
             user-select: none;
         }
-        canvas {
-            display: block;
-        }
+        canvas { display: block; }
         #ui-layer {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 2rem;
-            box-sizing: border-box;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; display: flex; flex-direction: column;
+            justify-content: space-between; padding: 2rem; box-sizing: border-box;
         }
         .glass-panel {
             background: var(--bg-glass);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 1.5rem;
-            color: white;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-            text-align: center;
-            max-width: 400px;
-            margin: 0 auto;
+            border-radius: 20px; padding: 1.5rem; color: white;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            text-align: center; max-width: 350px; margin: 0 auto;
             pointer-events: auto;
         }
-        h1 { margin: 0 0 10px 0; font-size: 24px; text-transform: uppercase; letter-spacing: 2px; color: var(--primary); }
+        h1 { margin: 0; font-size: 20px; letter-spacing: 3px; color: var(--primary); text-transform: uppercase; }
         .meter-container {
-            width: 100%; height: 30px; background: rgba(0,0,0,0.5);
-            border-radius: 15px; margin: 15px 0; position: relative;
-            overflow: hidden; border: 2px solid rgba(255,255,255,0.2);
+            width: 100%; height: 12px; background: rgba(255,255,255,0.1);
+            border-radius: 6px; margin: 12px 0; position: relative; overflow: hidden;
         }
         .meter-fill {
             height: 100%; width: 0%;
-            background: linear-gradient(90deg, #ff3366, #ffcc00, #00ffcc);
-            transition: width 0.05s linear;
+            background: linear-gradient(90deg, #3b82f6, var(--primary));
         }
         .meter-target {
-            position: absolute; top: 0; height: 100%; width: 10px;
-            background: white; left: 50%; transform: translateX(-50%);
-            box-shadow: 0 0 10px white;
+            position: absolute; top: 0; height: 100%; width: 4px;
+            background: #fff; left: 50%; transform: translateX(-50%);
+            box-shadow: 0 0 10px #fff;
         }
-        .stats {
-            font-size: 3rem; font-weight: bold; text-shadow: 0 0 20px var(--primary);
-            margin: 0;
-        }
-        .sub-text { font-size: 1rem; color: #ccc; margin-bottom: 10px; }
+        .stats { font-size: 3.5rem; font-weight: 800; margin: 0.5rem 0; color: #fff; }
+        .sub-text { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
         button {
-            background: var(--primary); color: #111; border: none;
-            padding: 12px 30px; font-size: 18px; font-weight: bold;
-            border-radius: 30px; cursor: pointer; text-transform: uppercase;
-            transition: all 0.2s; box-shadow: 0 0 15px var(--primary);
+            background: #fff; color: #0f172a; border: none;
+            padding: 12px 24px; font-size: 14px; font-weight: 700;
+            border-radius: 12px; cursor: pointer; text-transform: uppercase;
+            transition: all 0.2s; width: 100%;
         }
-        button:hover { transform: scale(1.05); box-shadow: 0 0 25px var(--primary); }
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,255,204,0.3); }
     </style>
 </head>
 <body>
@@ -81,161 +61,222 @@
     <canvas id="gameCanvas"></canvas>
 
     <div id="ui-layer">
-        <div class="glass-panel" style="margin-top: 0;">
-            <h1>Long Drive</h1>
-            <div class="sub-text" id="instruction">Click anywhere or press SPACE to set Power</div>
+        <div class="glass-panel">
+            <h1>Apex Drive</h1>
+            <div id="instruction" class="sub-text" style="margin-top:10px;">Click to set Power</div>
             
-            <div style="text-align: left; font-size: 12px; margin-bottom: 5px;">POWER</div>
+            <div class="meter-container"><div class="meter-fill" id="powerMeter"></div></div>
+            <div class="sub-text">Accuracy</div>
             <div class="meter-container">
-                <div class="meter-fill" id="powerMeter"></div>
-                <div class="meter-target" style="left: 95%;"></div>
-            </div>
-
-            <div style="text-align: left; font-size: 12px; margin-bottom: 5px;">ACCURACY</div>
-            <div class="meter-container">
-                <div class="meter-fill" id="accuracyMeter" style="width: 50%; background: #00ffcc;"></div>
-                <div class="meter-target" style="left: 50%;"></div>
+                <div class="meter-fill" id="accuracyMeter" style="width: 50%;"></div>
+                <div class="meter-target"></div>
             </div>
         </div>
 
-        <div class="glass-panel" id="result-panel" style="margin-bottom: 0; opacity: 0; transition: opacity 0.5s;">
-            <div class="sub-text">TOTAL DISTANCE</div>
+        <div class="glass-panel" id="result-panel" style="opacity: 0; transform: translateY(20px); transition: all 0.5s ease;">
+            <div class="sub-text">Total Distance</div>
             <p class="stats" id="distanceText">0 YDS</p>
-            <button onclick="resetGame()" style="margin-top: 15px;">Swing Again</button>
+            <button onclick="resetGame()">New Ball</button>
         </div>
     </div>
 
 <script>
-// ... (Keep existing variables, just update these specific functions)
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // UI
+    const powerMeter = document.getElementById('powerMeter');
+    const accuracyMeter = document.getElementById('accuracyMeter');
+    const instruction = document.getElementById('instruction');
+    const resultPanel = document.getElementById('result-panel');
+    const distanceText = document.getElementById('distanceText');
 
-    function drawScenery() {
-        // 1. Dynamic Sky Gradient (Moves slightly with camera for depth)
-        let sky = ctx.createLinearGradient(0, -camera.y * 0.5, 0, height - camera.y);
-        sky.addColorStop(0, "#0f172a"); // Dark space blue
-        sky.addColorStop(0.5, "#1e293b"); // Slate
-        sky.addColorStop(1, "#334155"); 
-        ctx.fillStyle = sky;
-        ctx.fillRect(0, 0, width, height);
+    let width, height, groundLevel;
+    let state = 'power'; 
+    let power = 0;
+    let accuracy = 50; 
+    let meterDir = 1;
+    let camera = { x: 0, y: 0 };
+    let ball = { x: 100, y: 0, vx: 0, vy: 0, radius: 4, active: false };
+    let trail = [];
+    let particles = [];
+    
+    // Constants
+    const gravity = 0.18;
+    const friction = 0.985;
+    const bounce = 0.55;
 
-        // 2. Distant Sun/Moon
-        ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
-        ctx.beginPath();
-        ctx.arc(width * 0.8 - (camera.x * 0.05), 150 - (camera.y * 0.1), 60, 0, Math.PI * 2);
-        ctx.fill();
+    function resize() {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+        groundLevel = height - 120;
+    }
+    window.addEventListener('resize', resize);
+    resize();
 
-        // 3. PARALLAX MOUNTAINS (Synced to Ground)
-        // We draw two layers of mountains for depth
-        drawMountainRange(0.1, "#1e293b", 300, 100); // Back layer (slower)
-        drawMountainRange(0.25, "#0f172a", 200, 150); // Front layer (faster)
-
-        // 4. THE FIXED GROUND
-        ctx.save();
-        ctx.translate(0, -camera.y);
-        
-        // Main Grass
-        ctx.fillStyle = "#14532d"; 
-        ctx.fillRect(0, groundLevel, width, height + camera.y + 500);
-
-        // Mowed Stripes (Locked to World X)
-        ctx.fillStyle = "rgba(255,255,255,0.03)";
-        let stripeWidth = 150;
-        let worldStart = Math.floor(camera.x / (stripeWidth * 2)) * (stripeWidth * 2);
-        for (let x = worldStart - stripeWidth * 2; x < worldStart + width + stripeWidth; x += stripeWidth * 2) {
-            ctx.fillRect(x - camera.x, groundLevel, stripeWidth, 2000);
+    function spawnParticles(x, y, color, count) {
+        for(let i=0; i<count; i++) {
+            particles.push({
+                x, y,
+                vx: (Math.random() - 0.5) * 8,
+                vy: (Math.random() - 0.8) * 8,
+                life: 1,
+                color
+            });
         }
-        ctx.restore();
     }
 
-    function drawMountainRange(speed, color, baseHeight, variance) {
-        ctx.save();
+    function launch() {
+        ball.active = true;
+        let pFactor = power / 100;
+        let aFactor = 1 - (Math.abs(accuracy - 50) / 50); // 1 is perfect
+        
+        ball.vx = (12 + (pFactor * 25)) * (0.7 + aFactor * 0.3);
+        ball.vy = -10 - (pFactor * 18);
+        spawnParticles(ball.x, ball.y, '#fff', 20);
+    }
+
+    function resetGame() {
+        state = 'power';
+        power = 0; accuracy = 50; meterDir = 1;
+        ball = { x: 150, y: groundLevel, vx: 0, vy: 0, radius: 4, active: false };
+        camera = { x: 0, y: 0 };
+        trail = [];
+        resultPanel.style.opacity = '0';
+        resultPanel.style.transform = 'translateY(20px)';
+        instruction.innerText = "Click to set Power";
+    }
+
+    function drawMountainRange(speed, color, baseH, varH) {
         ctx.fillStyle = color;
         ctx.beginPath();
+        ctx.moveTo(0, height); // Fill below
         
-        // Start at the left of screen, locked to the ground level minus camera Y
-        ctx.moveTo(0, groundLevel - camera.y);
-
-        let step = 120;
-        // Offset the start point based on camera movement to create parallax
+        let step = 100;
         let offset = (camera.x * speed) % (step * 2);
         
-        for (let i = -step * 2; i < width + step * 2; i += step) {
-            let x = i - offset;
-            // The "y" is calculated relative to groundLevel
-            // We use a pseudo-random sine wave so the mountains stay consistent
-            let peakHeight = baseHeight + Math.sin(i * 0.01) * variance;
-            ctx.lineTo(x, (groundLevel - camera.y) - peakHeight);
-            ctx.lineTo(x + step/2, (groundLevel - camera.y) - (peakHeight * 0.6));
+        for (let x = -step * 2; x < width + step * 2; x += step) {
+            let worldX = x + (camera.x * speed);
+            let h = baseH + Math.sin(worldX * 0.005) * varH;
+            ctx.lineTo(x - offset, (groundLevel - camera.y) - h);
+        }
+        
+        ctx.lineTo(width, height);
+        ctx.lineTo(0, height);
+        ctx.fill();
+    }
+
+    function update() {
+        if (state === 'power') {
+            power += 2 * meterDir;
+            if (power >= 100 || power <= 0) meterDir *= -1;
+            powerMeter.style.width = power + '%';
+        } else if (state === 'accuracy') {
+            accuracy += 4 * meterDir;
+            if (accuracy >= 100 || accuracy <= 0) meterDir *= -1;
+            accuracyMeter.style.width = accuracy + '%';
+        } else if (ball.active) {
+            ball.vy += gravity;
+            ball.vx *= friction;
+            ball.x += ball.vx;
+            ball.y += ball.vy;
+
+            if (ball.y >= groundLevel) {
+                ball.y = groundLevel;
+                ball.vy = -ball.vy * bounce;
+                ball.vx *= 0.8;
+                if (Math.abs(ball.vx) > 1) spawnParticles(ball.x, ball.y, '#4ade80', 2);
+                if (Math.abs(ball.vx) < 0.3) {
+                    ball.active = false;
+                    distanceText.innerText = Math.floor((ball.x - 150)/10) + " YDS";
+                    resultPanel.style.opacity = '1';
+                    resultPanel.style.transform = 'translateY(0)';
+                }
+            }
+            trail.push({x: ball.x, y: ball.y});
+            if (trail.length > 50) trail.shift();
         }
 
-        ctx.lineTo(width, groundLevel - camera.y);
-        ctx.lineTo(0, groundLevel - camera.y);
+        // Camera
+        let tx = ball.x - width/4;
+        let ty = Math.min(0, ball.y - height/2);
+        camera.x += (tx - camera.x) * 0.1;
+        camera.y += (ty - camera.y) * 0.05;
+
+        particles.forEach((p, i) => {
+            p.x += p.vx; p.y += p.vy; p.vy += 0.2; p.life -= 0.02;
+            if (p.life <= 0) particles.splice(i, 1);
+        });
+    }
+
+    function draw() {
+        // Sky
+        let grad = ctx.createLinearGradient(0, 0, 0, height);
+        grad.addColorStop(0, '#020617');
+        grad.addColorStop(1, '#1e1b4b');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, width, height);
+
+        // Mountains
+        drawMountainRange(0.1, '#1e293b', 200, 80);
+        drawMountainRange(0.3, '#0f172a', 100, 40);
+
+        // Ground
+        ctx.save();
+        ctx.translate(-camera.x, -camera.y);
+        ctx.fillStyle = '#064e3b';
+        ctx.fillRect(camera.x, groundLevel, width, 500);
+        
+        // Mowed lines
+        ctx.fillStyle = 'rgba(255,255,255,0.03)';
+        for(let i=0; i<ball.x + width; i+=200) {
+            ctx.fillRect(i, groundLevel, 100, 500);
+        }
+
+        // Trail
+        if (trail.length > 1) {
+            ctx.strokeStyle = 'rgba(0, 255, 204, 0.3)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(trail[0].x, trail[0].y);
+            trail.forEach(p => ctx.lineTo(p.x, p.y));
+            ctx.stroke();
+        }
+
+        // Ball
+        ctx.fillStyle = '#fff';
+        ctx.shadowBlur = 15; ctx.shadowColor = '#00ffcc';
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2);
         ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Particles
+        particles.forEach(p => {
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = p.life;
+            ctx.fillRect(p.x, p.y, 3, 3);
+        });
+        ctx.globalAlpha = 1;
+
         ctx.restore();
     }
 
-    function updatePhysics() {
-        if (state === 'power') {
-            power += 2 * meterDir;
-            if (power > 100 || power < 0) meterDir *= -1;
-            powerMeter.style.width = power + '%';
-        } 
-        else if (state === 'accuracy') {
-            accuracy += 3 * meterDir;
-            if (accuracy > 100 || accuracy < 0) meterDir *= -1;
-            accuracyMeter.style.width = accuracy + '%';
-        }
-        else if (state === 'flying' || state === 'landed') {
-            if (state === 'flying') {
-                ball.vy += gravity;
-                ball.vx *= friction;
-                ball.x += ball.vx;
-                ball.y += ball.vy;
-
-                if (trail.length === 0 || Math.abs(trail[trail.length-1].x - ball.x) > 5) {
-                    trail.push({x: ball.x, y: ball.y});
-                }
-
-                if (ball.y >= groundLevel) {
-                    ball.y = groundLevel;
-                    ball.vy = -ball.vy * bounceFriction;
-                    ball.vx *= 0.7;
-                    spawnParticles(ball.x, ball.y, '#4ade80', 8, 0.4);
-
-                    if (Math.abs(ball.vx) < 0.2 && Math.abs(ball.vy) < 0.5) {
-                        ball.vx = 0; ball.vy = 0;
-                        state = 'landed';
-                        showResults();
-                    }
-                }
-            }
-            
-            // CAMERA LOGIC: Always keep the ground in view
-            // Horizontal follow
-            let targetCamX = ball.x - width / 4;
-            camera.x += (targetCamX - camera.x) * 0.1;
-
-            // Vertical follow: Only follow the ball UP, stop at ground level
-            let ballHeightFromGround = groundLevel - ball.y;
-            let targetCamY = 0;
-            
-            if (ballHeightFromGround > height / 3) {
-                targetCamY = -(ballHeightFromGround - height / 3);
-            }
-            
-            camera.y += (targetCamY - camera.y) * 0.05;
-        }
-
-        // Particles
-        for (let i = particles.length - 1; i >= 0; i--) {
-            let p = particles[i];
-            p.x += p.vx;
-            p.y += p.vy;
-            p.vy += gravity * 0.5;
-            p.life -= 0.02;
-            if (p.life <= 0) particles.splice(i, 1);
-        }
+    function loop() {
+        update();
+        draw();
+        requestAnimationFrame(loop);
     }
 
+    window.addEventListener('mousedown', () => {
+        if (state === 'power') { state = 'accuracy'; instruction.innerText = "Set Accuracy"; }
+        else if (state === 'accuracy') { state = 'flying'; instruction.innerText = "Watching..."; launch(); }
+    });
+
+    resetGame();
+    loop();
 </script>
 </body>
 </html>
