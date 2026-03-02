@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name, "viewport" content="width=device-width, initial-scale=1.0">
-    <title>Will's Driving Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Will's Driving</title>
     <style>
         :root {
             --primary: #00ffcc;
@@ -95,11 +95,12 @@
     let width, height, groundLevel;
     let state = 'idle'; 
     let power = 0; let accuracy = 50; let meterDir = 1;
-    let camera = { x: 0, y: 0, zoom: 1.5 }; // Starting zoomed in
+    let camera = { x: 0, y: 0, zoom: 1.5 };
     let ball = { x: 100, y: 0, vx: 0, vy: 0, active: false, inAir: true };
     let trail = [];
+    let clouds = [];
 
-    // "Average Joe" Calibration
+    // Club Settings
     const clubs = {
         driver: { angle: 0.21, spin: 0.001, power: 34, bounce: 0.45, friction: 0.97 },
         wood:   { angle: 0.28, spin: 0.002, power: 29, bounce: 0.35, friction: 0.95 },
@@ -111,7 +112,22 @@
         width = window.innerWidth; height = window.innerHeight;
         canvas.width = width; canvas.height = height;
         groundLevel = height - 100;
+        initClouds();
     }
+
+    function initClouds() {
+        clouds = [];
+        for(let i=0; i<15; i++) {
+            clouds.push({
+                x: Math.random() * width * 5,
+                y: Math.random() * height * 0.6,
+                w: Math.random() * 200 + 100,
+                h: Math.random() * 40 + 20,
+                speed: Math.random() * 0.2 + 0.05
+            });
+        }
+    }
+
     window.addEventListener('resize', resize);
     resize();
 
@@ -172,8 +188,7 @@
             if (trail.length > 40) trail.shift();
         }
 
-        // DYNAMIC ZOOM & CAMERA
-        // Zoom out as the ball gets higher or faster, zoom in as it stops
+        // IMPROVED CAMERA LEAD: Keeps ball on the left for better sense of speed
         let targetZoom = 1.6;
         if (ball.active) {
             let speedFactor = Math.abs(ball.vx) / 30;
@@ -182,32 +197,46 @@
         }
         camera.zoom += (targetZoom - camera.zoom) * 0.05;
 
-        let camX = ball.x * camera.zoom - width / 4;
+        // X Lead: width/6 instead of width/4 pushes the ball back, showing more fairway
+        let camX = ball.x * camera.zoom - width / 6; 
         let camY = ball.y * camera.zoom - height / 1.5;
         camera.x += (camX - camera.x) * 0.1;
         camera.y += (camY - camera.y) * 0.1;
     }
 
     function draw() {
-        ctx.fillStyle = '#0f172a';
+        // Skybox Gradient
+        let sky = ctx.createLinearGradient(0, 0, 0, height);
+        sky.addColorStop(0, '#1e293b');
+        sky.addColorStop(1, '#334155');
+        ctx.fillStyle = sky;
         ctx.fillRect(0, 0, width, height);
 
+        // Procedural Clouds (Parallax)
+        ctx.fillStyle = "rgba(255,255,255,0.05)";
+        clouds.forEach(c => {
+            let cloudX = (c.x - camera.x * c.speed) % (width * 4);
+            if (cloudX < -200) cloudX += width * 4;
+            ctx.beginPath();
+            ctx.ellipse(cloudX, c.y, c.w, c.h, 0, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
         ctx.save();
-        // Applying the zoom and camera translation
         ctx.translate(-camera.x, -camera.y);
         ctx.scale(camera.zoom, camera.zoom);
 
         // Ground
         ctx.fillStyle = '#14532d';
-        ctx.fillRect(camera.x / camera.zoom, groundLevel, width / camera.zoom + 2000, 500);
+        ctx.fillRect(camera.x / camera.zoom - 500, groundLevel, width / camera.zoom + 5000, 500);
 
-        // Grid Lines for scale
+        // Grid Lines
         ctx.strokeStyle = 'rgba(255,255,255,0.05)';
         ctx.lineWidth = 1;
-        for(let i=0; i < ball.x + 2000; i += (8.5 * 25)) {
+        for(let i=0; i < ball.x + 5000; i += (8.5 * 25)) {
             ctx.beginPath();
             ctx.moveTo(i + 100, groundLevel);
-            ctx.lineTo(i + 100, groundLevel + 100);
+            ctx.lineTo(i + 100, groundLevel + 20);
             ctx.stroke();
         }
 
@@ -221,7 +250,7 @@
             ctx.stroke();
         }
 
-        // Ball (Size adjusted by zoom to keep it visible)
+        // Ball
         ctx.fillStyle = '#fff';
         ctx.beginPath();
         ctx.arc(ball.x, ball.y, 4 / camera.zoom, 0, Math.PI * 2);
