@@ -2,86 +2,84 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Will's Long Drive</title>
+    <meta name, "viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apex Long Drive: Zoom Edition</title>
     <style>
         :root {
-            --primary: #4ade80; /* "Masters" Green */
-            --bg-glass: rgba(15, 20, 30, 0.95);
+            --primary: #00ffcc;
+            --bg-glass: rgba(25, 30, 45, 0.85);
         }
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
-            overflow: hidden; background-color: #050a15;
-            font-family: 'Inter', system-ui, sans-serif;
+            overflow: hidden; background-color: #0f172a;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             user-select: none;
         }
         canvas { display: block; }
         #ui-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; display: flex; flex-direction: column;
-            justify-content: space-between; padding: 1.5rem; box-sizing: border-box;
+            justify-content: space-between; padding: 2rem; box-sizing: border-box;
         }
         .glass-panel {
             background: var(--bg-glass);
-            backdrop-filter: blur(15px);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px; padding: 1rem; color: white;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            text-align: center; max-width: 320px; margin: 0 auto;
+            border-radius: 15px; padding: 1.5rem; color: white;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            text-align: center; max-width: 350px; margin: 0 auto;
             pointer-events: auto;
         }
-        .club-selector { display: flex; gap: 4px; justify-content: center; margin-top: 8px; }
+        h1 { margin: 0 0 10px 0; font-size: 22px; text-transform: uppercase; letter-spacing: 2px; color: var(--primary); }
+        .club-selector { display: flex; gap: 8px; justify-content: center; margin-bottom: 15px; }
         .club-btn {
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-            color: #94a3b8; padding: 6px 8px; border-radius: 6px; cursor: pointer;
-            font-size: 9px; font-weight: 800; transition: 0.2s;
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+            color: #ccc; padding: 6px 12px; border-radius: 20px; cursor: pointer;
+            font-size: 10px; font-weight: bold; transition: all 0.2s;
         }
-        .club-btn.active { background: var(--primary); color: #050a15; border-color: var(--primary); }
-        h1 { margin: 0; font-size: 14px; letter-spacing: 2px; color: #fff; text-transform: uppercase; }
-        .label { font-size: 8px; color: #94a3b8; text-transform: uppercase; margin-top: 10px; display: block; text-align: left;}
+        .club-btn.active { background: var(--primary); color: #111; border-color: var(--primary); }
         .meter-container {
-            width: 100%; height: 6px; background: rgba(255,255,255,0.1);
-            border-radius: 3px; margin: 4px 0; position: relative; overflow: hidden;
+            width: 100%; height: 25px; background: rgba(0,0,0,0.5);
+            border-radius: 12px; margin: 10px 0; position: relative;
+            overflow: hidden; border: 1px solid rgba(255,255,255,0.2);
         }
-        .meter-fill { height: 100%; width: 0%; background: var(--primary); }
-        .stats { font-size: 3rem; font-weight: 900; margin: 0; color: #fff; line-height: 1; }
-        .live-dist { position: absolute; top: 20px; right: 20px; color: var(--primary); font-weight: 800; font-size: 20px; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
-        button.main-btn {
-            background: var(--primary); color: #050a15; border: none; padding: 10px;
-            font-size: 12px; font-weight: 800; border-radius: 10px; cursor: pointer;
-            width: 100%; margin-top: 10px; text-transform: uppercase;
+        .meter-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #ff3366, #ffcc00, #00ffcc); }
+        .stats { font-size: 3.5rem; font-weight: bold; text-shadow: 0 0 20px var(--primary); margin: 0; }
+        .sub-text { font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
+        button.action-btn {
+            background: var(--primary); color: #111; border: none;
+            padding: 12px 30px; font-size: 16px; font-weight: bold;
+            border-radius: 30px; cursor: pointer; text-transform: uppercase;
+            transition: all 0.2s; margin-top: 10px; width: 100%;
         }
     </style>
 </head>
 <body>
 
-    <div id="live-tracker" class="live-dist">0 YDS</div>
     <canvas id="gameCanvas"></canvas>
 
     <div id="ui-layer">
         <div class="glass-panel">
-            <h1>Weekend Warrior Golf</h1>
+            <h1>Long Drive</h1>
             <div class="club-selector">
                 <div class="club-btn active" onclick="setClub('driver')" id="btn-driver">DRIVER</div>
                 <div class="club-btn" onclick="setClub('wood')" id="btn-wood">3-WOOD</div>
                 <div class="club-btn" onclick="setClub('iron')" id="btn-iron">7-IRON</div>
             </div>
-
-            <span class="label">Swing Speed</span>
+            <div class="sub-text" id="instruction">Click to Set Power</div>
             <div class="meter-container"><div class="meter-fill" id="powerMeter"></div></div>
-            
-            <span class="label">Strike Quality</span>
+            <div class="sub-text">Accuracy</div>
             <div class="meter-container">
-                <div class="meter-fill" id="accuracyMeter" style="width: 50%; background: #60a5fa;"></div>
-                <div style="position:absolute; left:50%; top:0; bottom:0; width:2px; background:#fff;"></div>
+                <div class="meter-fill" id="accuracyMeter" style="width: 50%; background: #00ffcc;"></div>
+                <div style="position:absolute; left:50%; top:0; bottom:0; width:3px; background:#fff; box-shadow:0 0 5px #fff;"></div>
             </div>
-            <div id="instruction" style="font-size: 10px; margin-top: 8px; color: #94a3b8;">CLICK TO START SWING</div>
         </div>
 
-        <div class="glass-panel" id="result-panel" style="opacity: 0; pointer-events: none; transform: translateY(20px); transition: 0.4s;">
-            <span class="label" style="text-align:center">Total Distance</span>
+        <div class="glass-panel" id="result-panel" style="opacity: 0; pointer-events: none; transform: translateY(20px); transition: 0.5s;">
+            <div class="sub-text">Total Distance</div>
             <p class="stats" id="distanceText">0 YDS</p>
-            <button class="main-btn" onclick="resetGame()">New Ball</button>
+            <button class="action-btn" onclick="resetGame()">Swing Again</button>
         </div>
     </div>
 
@@ -93,21 +91,19 @@
     const instruction = document.getElementById('instruction');
     const resultPanel = document.getElementById('result-panel');
     const distanceText = document.getElementById('distanceText');
-    const liveTracker = document.getElementById('live-tracker');
 
     let width, height, groundLevel;
     let state = 'idle'; 
     let power = 0; let accuracy = 50; let meterDir = 1;
-    let camera = { x: 0, y: 0 };
+    let camera = { x: 0, y: 0, zoom: 1.5 }; // Starting zoomed in
     let ball = { x: 100, y: 0, vx: 0, vy: 0, active: false, inAir: true };
-    let trail = []; let particles = [];
+    let trail = [];
 
-    // Real-world calibration for average male amateur (~90mph swing)
-    // Yardage = (Pixels / 8.5)
+    // "Average Joe" Calibration
     const clubs = {
-        driver: { angle: 0.21, spin: 0.001, power: 32, bounce: 0.4, friction: 0.97 }, // 12 deg
-        wood:   { angle: 0.28, spin: 0.002, power: 28, bounce: 0.3, friction: 0.95 }, // 16 deg
-        iron:   { angle: 0.58, spin: 0.007, power: 22, bounce: 0.15, friction: 0.92 } // 33 deg
+        driver: { angle: 0.21, spin: 0.001, power: 34, bounce: 0.45, friction: 0.97 },
+        wood:   { angle: 0.28, spin: 0.002, power: 29, bounce: 0.35, friction: 0.95 },
+        iron:   { angle: 0.58, spin: 0.007, power: 23, bounce: 0.2, friction: 0.92 }
     };
     let currentClub = clubs.driver;
 
@@ -130,9 +126,8 @@
     function launch() {
         ball.active = true;
         ball.inAir = true;
-        const pMod = 0.8 + (power / 100) * 0.2; // Amateur power variance is lower
-        const accMod = 1 - (Math.abs(accuracy - 50) / 75); 
-        
+        const pMod = 0.85 + (power / 100) * 0.15;
+        const accMod = 1 - (Math.abs(accuracy - 50) / 80); 
         const force = currentClub.power * pMod * accMod;
         ball.vx = Math.cos(currentClub.angle) * force;
         ball.vy = -Math.sin(currentClub.angle) * force;
@@ -149,84 +144,88 @@
             accuracyMeter.style.width = accuracy + '%';
         } else if (ball.active) {
             if (ball.inAir) {
-                ball.vy += 0.25; // Slightly heavier gravity for realism
-                ball.vx *= 0.992; // Higher air drag for non-pro ball speed
+                ball.vy += 0.24; 
+                ball.vx *= 0.993; 
                 ball.vy -= ball.vx * currentClub.spin;
             } else {
                 ball.vx *= currentClub.friction;
             }
-
-            ball.x += ball.vx;
-            ball.y += ball.vy;
-
-            // Live Distance Update
-            let currentYds = Math.max(0, Math.floor((ball.x - 100) / 8.5));
-            liveTracker.innerText = currentYds + " YDS";
+            ball.x += ball.vx; ball.y += ball.vy;
 
             if (ball.y >= groundLevel) {
                 ball.y = groundLevel;
                 if (Math.abs(ball.vy) > 0.6) {
                     ball.vy = -ball.vy * currentClub.bounce;
-                    ball.vx *= 0.75;
+                    ball.vx *= 0.8;
                 } else {
                     ball.vy = 0; ball.inAir = false;
                 }
                 if (Math.abs(ball.vx) < 0.2) {
                     ball.vx = 0; ball.active = false; state = 'landed';
-                    distanceText.innerText = currentYds + " YDS";
+                    distanceText.innerText = Math.floor((ball.x - 100) / 8.5) + " YDS";
                     resultPanel.style.opacity = '1';
                     resultPanel.style.pointerEvents = 'auto';
                     resultPanel.style.transform = 'translateY(0)';
                 }
             }
             if (ball.active && ball.vx > 1) trail.push({x: ball.x, y: ball.y});
-            if (trail.length > 50) trail.shift();
+            if (trail.length > 40) trail.shift();
         }
 
-        camera.x += (ball.x - width/4 - camera.x) * 0.1;
-        camera.y += (Math.min(0, ball.y - height/1.8) - camera.y) * 0.05;
+        // DYNAMIC ZOOM & CAMERA
+        // Zoom out as the ball gets higher or faster, zoom in as it stops
+        let targetZoom = 1.6;
+        if (ball.active) {
+            let speedFactor = Math.abs(ball.vx) / 30;
+            let heightFactor = (groundLevel - ball.y) / 400;
+            targetZoom = 1.6 - (speedFactor * 0.4) - (heightFactor * 0.3);
+        }
+        camera.zoom += (targetZoom - camera.zoom) * 0.05;
+
+        let camX = ball.x * camera.zoom - width / 4;
+        let camY = ball.y * camera.zoom - height / 1.5;
+        camera.x += (camX - camera.x) * 0.1;
+        camera.y += (camY - camera.y) * 0.1;
     }
 
     function draw() {
-        ctx.fillStyle = '#0a0f1a';
-        ctx.fillRect(0, 0, width, height);
-
-        // Simple Sky Gradient
-        let sky = ctx.createLinearGradient(0, 0, 0, height);
-        sky.addColorStop(0, '#0f172a');
-        sky.addColorStop(1, '#1e293b');
-        ctx.fillStyle = sky;
+        ctx.fillStyle = '#0f172a';
         ctx.fillRect(0, 0, width, height);
 
         ctx.save();
+        // Applying the zoom and camera translation
         ctx.translate(-camera.x, -camera.y);
+        ctx.scale(camera.zoom, camera.zoom);
 
         // Ground
         ctx.fillStyle = '#14532d';
-        ctx.fillRect(camera.x, groundLevel, width, height);
-        
-        // Yardage Markers
-        ctx.fillStyle = 'rgba(255,255,255,0.1)';
-        ctx.textAlign = 'center';
-        for(let i=0; i < ball.x + width + 1000; i += (8.5 * 50)) { // Every 50 yards
-            let yds = Math.floor(i / 8.5);
-            if (i > 0) {
-                ctx.fillRect(i + 100, groundLevel, 2, 20);
-                ctx.fillText(yds + "Y", i + 100, groundLevel + 40);
-            }
+        ctx.fillRect(camera.x / camera.zoom, groundLevel, width / camera.zoom + 2000, 500);
+
+        // Grid Lines for scale
+        ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+        ctx.lineWidth = 1;
+        for(let i=0; i < ball.x + 2000; i += (8.5 * 25)) {
+            ctx.beginPath();
+            ctx.moveTo(i + 100, groundLevel);
+            ctx.lineTo(i + 100, groundLevel + 100);
+            ctx.stroke();
         }
 
-        // Ball & Trail
+        // Trail
         if (trail.length > 1) {
-            ctx.strokeStyle = 'rgba(74, 222, 128, 0.3)';
-            ctx.lineWidth = 2; ctx.beginPath();
+            ctx.strokeStyle = 'rgba(0, 255, 204, 0.4)';
+            ctx.lineWidth = 2 / camera.zoom;
+            ctx.beginPath();
             ctx.moveTo(trail[0].x, trail[0].y);
             trail.forEach(p => ctx.lineTo(p.x, p.y));
             ctx.stroke();
         }
 
+        // Ball (Size adjusted by zoom to keep it visible)
         ctx.fillStyle = '#fff';
-        ctx.beginPath(); ctx.arc(ball.x, ball.y, 3.5, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, 4 / camera.zoom, 0, Math.PI * 2);
+        ctx.fill();
 
         ctx.restore();
     }
@@ -234,16 +233,15 @@
     function resetGame() {
         state = 'idle'; power = 0; accuracy = 50;
         ball = { x: 100, y: groundLevel, vx: 0, vy: 0, active: false, inAir: true };
-        camera = { x: 0, y: 0 }; trail = [];
+        camera = { x: 0, y: 0, zoom: 1.5 }; trail = [];
         resultPanel.style.opacity = '0';
-        liveTracker.innerText = "0 YDS";
-        instruction.innerText = "CLICK TO START SWING";
+        instruction.innerText = "CLICK TO SET POWER";
     }
 
     window.addEventListener('mousedown', (e) => {
         if(e.target.closest('.glass-panel')) return;
-        if (state === 'idle' || state === 'landed') { state = 'power'; instruction.innerText = "POWER..."; }
-        else if (state === 'power') { state = 'accuracy'; instruction.innerText = "ACCURACY..."; }
+        if (state === 'idle' || state === 'landed') { state = 'power'; instruction.innerText = "SET POWER..."; }
+        else if (state === 'power') { state = 'accuracy'; instruction.innerText = "SET ACCURACY..."; }
         else if (state === 'accuracy') { state = 'flying'; launch(); }
     });
 
